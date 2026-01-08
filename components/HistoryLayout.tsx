@@ -36,184 +36,141 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({ data, currentDate, imageU
       {/* Dynamic Background subtle glow */}
       <div className="absolute inset-0 pointer-events-none" style={bgGradient} />
       
-      {/* Watermark - Fixed background element */}
+      {/* Watermark */}
       <div 
-        className="absolute bottom-[-5%] left-[-5%] text-[20vw] font-bold text-[#E6E2D6] select-none -rotate-12 pointer-events-none opacity-50 hidden sm:block"
+        className="absolute bottom-[-5%] right-[-5%] text-[18vw] font-bold text-[#E6E2D6] select-none rotate-12 pointer-events-none opacity-40 hidden md:block"
         style={{ fontFamily: '"LXGW WenKai Screen", sans-serif' }}
       >
         {year}
       </div>
 
-      {/* Main Container - 全宽无边框 */}
-      <div className="relative w-full bg-[#FDFBF7] min-h-screen flex flex-col z-10">
+      {/* Main Container */}
+      <div className="relative w-full bg-[#FDFBF7] min-h-screen z-10">
         
-        {/* Header Section: Date, Solar Term & Calendar */}
-        <div className="pt-5 px-4 sm:pt-8 sm:px-8 md:pt-10 md:px-12 lg:px-16 pb-5 sm:pb-6 z-10 shrink-0 border-b border-[#EBE8E0]/50">
-            {/* Top Row: Date + Solar Term + Calendar */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-start gap-4 sm:gap-6">
-                {/* Left: Date Display */}
-                <div className="flex-shrink-0">
-                    <div className="text-3xl sm:text-4xl md:text-5xl text-[#2D2926] tracking-tight mb-1 sm:mb-2 font-bold">
-                        {fullString}
+        {/* Header: 日期 + 日历 + 节气 三栏布局 */}
+        <div className="px-4 sm:px-6 md:px-8 lg:px-12 py-4 sm:py-6 border-b border-[#EBE8E0]/50">
+            <div className="max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-4 md:gap-6 items-center">
+                    
+                    {/* 左：日期 */}
+                    <div className="flex items-center gap-4">
+                        <div>
+                            <div className="text-3xl sm:text-4xl text-[#2D2926] tracking-tight font-bold">
+                                {fullString}
+                            </div>
+                            <div className="text-xs sm:text-sm font-medium text-[#8F8B85] tracking-widest mt-0.5">
+                                {weekDay}
+                            </div>
+                        </div>
                     </div>
-                    <div className="text-xs sm:text-sm md:text-base font-medium text-[#8F8B85] uppercase tracking-widest pl-0.5 sm:pl-1">
-                        {weekDay}
-                    </div>
-                </div>
 
-                {/* Middle: Solar Term Image - 填补日期和日历之间的空白 */}
-                {solarTerm && (
-                  <div className="flex-1 hidden lg:flex items-center justify-center px-8">
-                      <div className="relative w-full max-w-md h-32 rounded-2xl overflow-hidden bg-[#F7F5EF] border border-[#EBE8E0] group">
-                          {/* 背景图片 */}
-                          {loadingImage && !solarTermImageUrl ? (
-                              <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
-                                  <div className="w-5 h-5 border-2 border-dashed border-[#D97757] rounded-full animate-spin"></div>
-                              </div>
-                          ) : solarTermImageUrl ? (
-                              <img 
-                                  src={solarTermImageUrl} 
-                                  alt={solarTerm.name} 
-                                  className="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-80 transition-transform duration-700 group-hover:scale-105"
-                              />
-                          ) : (
-                              <div className="absolute inset-0 bg-gradient-to-r from-[#F7F5EF] to-[#EBE8E0]" />
-                          )}
-                          
-                          {/* 纹理叠加 */}
-                          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')] opacity-30 mix-blend-multiply pointer-events-none"></div>
-                          
-                          {/* 渐变遮罩 */}
-                          <div className="absolute inset-0 bg-gradient-to-r from-[#FDFBF7]/95 via-[#FDFBF7]/50 to-transparent"></div>
-                          
-                          {/* 节气文字 */}
-                          <div className="absolute inset-0 flex items-center px-6">
-                              <div className="flex flex-col">
-                                  <span className="text-3xl font-bold text-[#2D2926] leading-none mb-1.5" style={{ fontFamily: '"LXGW WenKai Screen", serif' }}>
-                                      {solarTerm.name}
-                                  </span>
-                                  <span className="text-[11px] uppercase tracking-widest text-[#8F8B85] font-semibold">
-                                      {solarTerm.en}
-                                  </span>
+                    {/* 中：节气卡片 */}
+                    {solarTerm && (
+                      <div className="flex justify-center">
+                          <div className="relative h-20 sm:h-24 w-full max-w-xs rounded-xl overflow-hidden bg-[#F7F5EF] border border-[#EBE8E0] group">
+                              {solarTermImageUrl ? (
+                                  <img 
+                                      src={solarTermImageUrl} 
+                                      alt={solarTerm.name} 
+                                      className="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-70"
+                                  />
+                              ) : loadingImage ? (
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                      <div className="w-4 h-4 border-2 border-dashed border-[#D97757] rounded-full animate-spin"></div>
+                                  </div>
+                              ) : null}
+                              <div className="absolute inset-0 bg-gradient-to-r from-[#FDFBF7]/90 via-[#FDFBF7]/40 to-transparent"></div>
+                              <div className="absolute inset-0 flex items-center px-4">
+                                  <div>
+                                      <span className="text-xl sm:text-2xl font-bold text-[#2D2926] leading-none" style={{ fontFamily: '"LXGW WenKai Screen", serif' }}>
+                                          {solarTerm.name}
+                                      </span>
+                                      <div className="text-[10px] uppercase tracking-wider text-[#8F8B85] font-medium mt-1">
+                                          {solarTerm.en}
+                                      </div>
+                                  </div>
                               </div>
                           </div>
                       </div>
-                  </div>
-                )}
-
-                {/* Right: Calendar Widget */}
-                <div className="flex-shrink-0 w-full lg:w-auto">
-                    <CalendarWidget currentDate={currentDate} primaryColor={data.themeColor} />
-                </div>
-            </div>
-
-            {/* Mobile: Solar Term Banner */}
-            {solarTerm && (
-              <div className="lg:hidden mt-6 relative w-full h-28 sm:h-32 rounded-xl overflow-hidden bg-[#F7F5EF] border border-[#EBE8E0] group">
-                  {loadingImage && !solarTermImageUrl ? (
-                      <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
-                          <div className="w-5 h-5 border-2 border-dashed border-[#D97757] rounded-full animate-spin"></div>
-                      </div>
-                  ) : solarTermImageUrl ? (
-                      <img 
-                          src={solarTermImageUrl} 
-                          alt={solarTerm.name} 
-                          className="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-80"
-                      />
-                  ) : (
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#F7F5EF] to-[#EBE8E0]" />
-                  )}
-                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')] opacity-30 mix-blend-multiply pointer-events-none"></div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#FDFBF7]/95 via-[#FDFBF7]/60 to-transparent"></div>
-                  <div className="absolute inset-0 flex items-center px-5">
-                      <div className="flex flex-col">
-                          <span className="text-2xl sm:text-3xl font-bold text-[#2D2926] leading-none mb-1" style={{ fontFamily: '"LXGW WenKai Screen", serif' }}>
-                              {solarTerm.name}
-                          </span>
-                          <span className="text-[10px] sm:text-[11px] uppercase tracking-widest text-[#8F8B85] font-semibold">
-                              {solarTerm.en}
-                          </span>
-                      </div>
-                  </div>
-              </div>
-            )}
-        </div>
-
-        {/* Content Body - Responsive Grid */}
-        <div className="flex-1 px-4 sm:px-8 md:px-12 lg:px-16 py-6 sm:py-8 md:py-12 grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 md:gap-16 relative z-10">
-            
-            {/* Left Column: Visuals */}
-            <div className="flex flex-col h-full w-full">
-                {/* Category Pill */}
-                <div className="flex items-center space-x-2 mb-4 sm:mb-6 shrink-0">
-                    <span 
-                        className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-[12px] font-bold tracking-wider bg-[#F2F0E9] border border-[#E6E2D6]"
-                        style={{ color: '#5C5855' }}
-                    >
-                        历史上的今天 · {data.category}
-                    </span>
-                </div>
-
-                {/* Illustration Area - Adaptive Bento Style */}
-                <div className="relative w-full aspect-[4/3] lg:aspect-auto lg:flex-1 lg:min-h-[300px] rounded-xl sm:rounded-2xl overflow-hidden bg-[#F7F5EF] border border-[#EBE8E0] flex items-center justify-center group shrink-0 transition-colors shadow-inner">
-                    {loadingImage && !imageUrl ? (
-                         <div className="animate-pulse flex flex-col items-center">
-                            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full border-2 border-dashed animate-spin mb-2" style={{ borderColor: '#D97757' }}></div>
-                            <span className="text-xs text-[#8F8B85] font-light">绘制中...</span>
-                         </div>
-                    ) : imageUrl ? (
-                        <img 
-                            src={imageUrl} 
-                            alt={data.visualPrompt} 
-                            className="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-95 transition-transform duration-700 group-hover:scale-105" 
-                        />
-                    ) : (
-                        <div className="p-6 sm:p-8 text-center text-[#8F8B85]">
-                            <ImageIcon size={40} strokeWidth={1} className="mx-auto mb-2 opacity-50" />
-                            <span className="text-xs">暂无插图</span>
-                        </div>
                     )}
-                    
-                    {/* Paper texture overlay */}
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')] opacity-40 mix-blend-multiply pointer-events-none"></div>
-                </div>
-            </div>
 
-            {/* Right Column: Event Details */}
-            <div className="flex flex-col justify-center h-full">
-                <div className="flex flex-wrap items-baseline gap-2 sm:gap-3 mb-4 sm:mb-6">
-                    <span className="text-xl sm:text-2xl md:text-3xl font-bold font-mono text-[#D97757] shrink-0">
-                        {data.year}
-                    </span>
-                    <div className="group flex items-center gap-2 min-w-0">
-                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#2D2926] leading-tight cursor-text break-words">
-                            {data.title}
-                        </h1>
-                        <button
-                            onClick={handleCopy}
-                            className="p-1 sm:p-1.5 rounded-lg text-[#8F8B85] hover:text-[#D97757] hover:bg-[#EBE8E0] transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100 shrink-0"
-                            aria-label="复制标题"
-                            title="复制标题"
-                        >
-                            {copied ? <Check size={18} /> : <Copy size={18} />}
-                        </button>
+                    {/* 右：日历 */}
+                    <div className="flex justify-center md:justify-end">
+                        <CalendarWidget currentDate={currentDate} primaryColor={data.themeColor} />
                     </div>
                 </div>
-                
-                <p className="text-[#4A4541] text-base sm:text-lg leading-[1.8] text-justify tracking-wide mb-6 sm:mb-10 flex-grow">
-                    {data.description}
-                </p>
+            </div>
+        </div>
 
-                {/* Keywords */}
-                <div className="flex flex-wrap gap-2 sm:gap-3 mt-auto pt-4 border-t border-[#EBE8E0]/50">
-                    {data.keywords.map((kw, i) => (
-                        <span 
-                            key={i} 
-                            className="text-xs sm:text-sm text-[#5C5855] bg-[#F2F0E9] px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg border border-[#E6E2D6] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:scale-105 hover:bg-[#EBE8E0] hover:border-[#D6D2C4] cursor-default"
-                        >
-                            #{kw}
-                        </span>
-                    ))}
+        {/* Content: 历史事件 */}
+        <div className="px-4 sm:px-6 md:px-8 lg:px-12 py-6 sm:py-8">
+            <div className="max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10">
+                    
+                    {/* 左：插图 (占 2 列) */}
+                    <div className="lg:col-span-2">
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider bg-[#F2F0E9] border border-[#E6E2D6] text-[#5C5855]">
+                                历史上的今天 · {data.category}
+                            </span>
+                        </div>
+                        <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-[#F7F5EF] border border-[#EBE8E0] flex items-center justify-center group shadow-inner">
+                            {loadingImage && !imageUrl ? (
+                                 <div className="animate-pulse flex flex-col items-center">
+                                    <div className="h-10 w-10 rounded-full border-2 border-dashed animate-spin mb-2" style={{ borderColor: '#D97757' }}></div>
+                                    <span className="text-xs text-[#8F8B85]">绘制中...</span>
+                                 </div>
+                            ) : imageUrl ? (
+                                <img 
+                                    src={imageUrl} 
+                                    alt={data.visualPrompt} 
+                                    className="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-95 transition-transform duration-500 group-hover:scale-105" 
+                                />
+                            ) : (
+                                <div className="text-center text-[#8F8B85]">
+                                    <ImageIcon size={36} strokeWidth={1} className="mx-auto mb-2 opacity-50" />
+                                    <span className="text-xs">暂无插图</span>
+                                </div>
+                            )}
+                            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')] opacity-30 mix-blend-multiply pointer-events-none"></div>
+                        </div>
+                    </div>
+
+                    {/* 右：事件详情 (占 3 列) */}
+                    <div className="lg:col-span-3 flex flex-col">
+                        <div className="flex flex-wrap items-baseline gap-2 mb-3">
+                            <span className="text-xl sm:text-2xl font-bold font-mono text-[#D97757]">
+                                {data.year}
+                            </span>
+                            <div className="group flex items-center gap-2">
+                                <h1 className="text-2xl sm:text-3xl font-bold text-[#2D2926] leading-tight">
+                                    {data.title}
+                                </h1>
+                                <button
+                                    onClick={handleCopy}
+                                    className="p-1 rounded-md text-[#8F8B85] hover:text-[#D97757] hover:bg-[#EBE8E0] transition-all"
+                                    aria-label="复制标题"
+                                >
+                                    {copied ? <Check size={16} /> : <Copy size={16} />}
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <p className="text-[#4A4541] text-base sm:text-lg leading-[1.9] text-justify tracking-wide mb-6 flex-grow">
+                            {data.description}
+                        </p>
+
+                        <div className="flex flex-wrap gap-2 pt-4 border-t border-[#EBE8E0]/50">
+                            {data.keywords.map((kw, i) => (
+                                <span 
+                                    key={i} 
+                                    className="text-xs text-[#5C5855] bg-[#F2F0E9] px-3 py-1.5 rounded-md border border-[#E6E2D6] hover:bg-[#EBE8E0] transition-colors cursor-default"
+                                >
+                                    #{kw}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

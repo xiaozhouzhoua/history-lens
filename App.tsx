@@ -23,8 +23,9 @@ const App: React.FC = () => {
     
     if (event.visualPrompt) {
       const refinedPrompt = `${event.visualPrompt}. Use a limited color palette matching ${event.themeColor}. Ultra-clean, negative space, vector art style.`;
+      const cacheKey = `${event.year}_${event.title}`;
       try {
-        const res = await generateIllustration(refinedPrompt);
+        const res = await generateIllustration(refinedPrompt, cacheKey);
         setImageUrls(prev => new Map(prev).set(index, res));
       } catch {
         setImageUrls(prev => new Map(prev).set(index, null));
@@ -60,8 +61,9 @@ const App: React.FC = () => {
       // First event illustration
       if (data[0]?.visualPrompt) {
         const refinedPrompt = `${data[0].visualPrompt}. Use a limited color palette matching ${data[0].themeColor}. Ultra-clean, negative space, vector art style.`;
+        const cacheKey = `${data[0].year}_${data[0].title}`;
         imagePromises.push(
-          generateIllustration(refinedPrompt)
+          generateIllustration(refinedPrompt, cacheKey)
             .then(res => {
               setImageUrls(prev => new Map(prev).set(0, res));
               return { type: 'main', res };

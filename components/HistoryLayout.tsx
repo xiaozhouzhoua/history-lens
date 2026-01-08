@@ -83,15 +83,15 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({ data, currentDate, imageU
             <div className="p-6 flex flex-col overflow-auto">
               {/* 标题 */}
               <div className="flex items-baseline gap-2 mb-4 flex-wrap">
-                <span className="text-2xl font-bold font-mono text-[#C75B3A]">{data.year}</span>
-                <h1 className="text-xl font-bold text-[#2D2926]">{data.title}</h1>
+                <span className="text-3xl font-bold font-mono text-[#C75B3A]">{data.year}</span>
+                <h1 className="text-2xl font-bold text-[#2D2926]">{data.title}</h1>
                 <button onClick={handleCopy} className="p-1 text-[#8F8B85] hover:text-[#C75B3A] transition-colors" aria-label="复制标题">
                   {copied ? <Check size={16} /> : <Copy size={16} />}
                 </button>
               </div>
               
               {/* 描述 */}
-              <p className="text-[#4A4541] text-sm leading-[2] text-justify tracking-wide flex-1">
+              <p className="text-[#4A4541] text-base leading-[2] text-justify tracking-wide flex-1">
                 {data.description}
               </p>
 

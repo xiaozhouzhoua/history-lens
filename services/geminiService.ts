@@ -161,13 +161,6 @@ export const fetchHistoryEvent = async (date: Date): Promise<HistoryEvent> => {
 };
 
 export const generateIllustration = async (prompt: string): Promise<string | null> => {
-  // 先检查缓存
-  const cached = getCache<string>(CACHE_KEYS.MAIN_IMAGE);
-  if (cached) {
-    console.log('Using cached main illustration');
-    return cached;
-  }
-
   if (!API_KEY) return null;
 
   try {
@@ -185,7 +178,6 @@ export const generateIllustration = async (prompt: string): Promise<string | nul
       for (const part of response.candidates[0].content.parts) {
         if (part.inlineData && part.inlineData.data) {
            const imageUrl = `data:image/png;base64,${part.inlineData.data}`;
-           setCache(CACHE_KEYS.MAIN_IMAGE, imageUrl);
            return imageUrl;
         }
       }

@@ -9,10 +9,32 @@ const App: React.FC = () => {
   const [currentDate] = useState(new Date());
   const [events, setEvents] = useState<HistoryEvent[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [imageUrls, setImageUrls] = useState<(string | null)[]>([]);
+  const [imageUrls, setImageUrls] = useState<Map<number, string | null>>(new Map());
+  const [loadingImageIndex, setLoadingImageIndex] = useState<number | null>(null);
   const [solarTermImageUrl, setSolarTermImageUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<FetchState>(FetchState.IDLE);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // 加载指定索引的图片
+  const loadImageForIndex = useCallback(async (index: number, event: HistoryEvent) => {
+    if (imageUrls.has(index)) return; // 已有缓存
+    
+    setLoadingImageIndex(index);
+    
+    if (event.visualPrompt) {
+      const refinedPrompt = `${event.visualPrompt}. Use a limited color palette matching ${event.themeColor}. Ultra-clean, negative space, vector art style.`;
+      try {
+        const res = await generateIllustration(refinedPrompt);
+        setImageUrls(prev => new Map(prev).set(index, res));
+      } catch {
+        setImageUrls(prev => new Map(prev).set(index, null));
+      }
+    } else {
+      setImageUrls(prev => new Map(prev).set(index, null));
+    }
+    
+    setLoadingImageIndex(null);
+  }, [imageUrls]);
 
   const loadData = useCallback(async () => {
     let isMounted = true;
@@ -20,7 +42,7 @@ const App: React.FC = () => {
     setErrorMessage(null);
     setEvents([]);
     setCurrentIndex(0);
-    setImageUrls([]);
+    setImageUrls(new Map());
     setSolarTermImageUrl(null);
 
     try {
@@ -30,19 +52,21 @@ const App: React.FC = () => {
       if (!isMounted) return;
       
       setEvents(data);
-      setImageUrls(new Array(data.length).fill(null));
       setStatus(FetchState.LOADING_IMAGE);
 
       // 2. Generate Images in Parallel (First Event + Solar Term)
-      const imagePromises: Promise<{ type: string; res: string | null; index?: number }>[] = [];
+      const imagePromises: Promise<{ type: string; res: string | null }>[] = [];
 
       // First event illustration
       if (data[0]?.visualPrompt) {
         const refinedPrompt = `${data[0].visualPrompt}. Use a limited color palette matching ${data[0].themeColor}. Ultra-clean, negative space, vector art style.`;
         imagePromises.push(
           generateIllustration(refinedPrompt)
-            .then(res => ({ type: 'main', res, index: 0 }))
-            .catch(() => ({ type: 'main', res: null, index: 0 }))
+            .then(res => {
+              setImageUrls(prev => new Map(prev).set(0, res));
+              return { type: 'main', res };
+            })
+            .catch(() => ({ type: 'main', res: null }))
         );
       }
 
@@ -60,13 +84,6 @@ const App: React.FC = () => {
 
       if (isMounted) {
         results.forEach(item => {
-          if (item.type === 'main' && item.index !== undefined) {
-            setImageUrls(prev => {
-              const newUrls = [...prev];
-              newUrls[item.index!] = item.res;
-              return newUrls;
-            });
-          }
           if (item.type === 'solar') setSolarTermImageUrl(item.res);
         });
         setStatus(FetchState.SUCCESS);
@@ -84,6 +101,13 @@ const App: React.FC = () => {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // 切换事件时加载图片
+  useEffect(() => {
+    if (events.length > 0 && !imageUrls.has(currentIndex)) {
+      loadImageForIndex(currentIndex, events[currentIndex]);
+    }
+  }, [currentIndex, events, imageUrls, loadImageForIndex]);
 
   const handlePrev = () => {
     setCurrentIndex(prev => (prev > 0 ? prev - 1 : events.length - 1));
@@ -103,13 +127,15 @@ const App: React.FC = () => {
     return <LoadingScreen />;
   }
 
+  const isLoadingCurrentImage = loadingImageIndex === currentIndex || (status === FetchState.LOADING_IMAGE && currentIndex === 0);
+
   return (
     <HistoryLayout 
       data={events[currentIndex]} 
       currentDate={currentDate} 
-      imageUrl={imageUrls[currentIndex]}
+      imageUrl={imageUrls.get(currentIndex) || null}
       solarTermImageUrl={solarTermImageUrl}
-      loadingImage={status === FetchState.LOADING_IMAGE}
+      loadingImage={isLoadingCurrentImage}
       totalEvents={events.length}
       currentEventIndex={currentIndex}
       onPrev={handlePrev}

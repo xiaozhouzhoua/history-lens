@@ -30,7 +30,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({ data, currentDate, imageU
 
   return (
     <div 
-        className="relative min-h-screen w-full flex items-center justify-center p-3 sm:p-6 md:p-12 overflow-y-auto overflow-x-hidden transition-colors duration-500"
+        className="relative min-h-screen w-full overflow-y-auto overflow-x-hidden transition-colors duration-500"
         style={{ backgroundColor: '#F0EEE6' }}
     >
       {/* Dynamic Background subtle glow */}
@@ -44,13 +44,13 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({ data, currentDate, imageU
         {year}
       </div>
 
-      {/* Main Container Card - Responsive Web Layout */}
-      <div className="relative w-full max-w-6xl bg-[#FDFBF7] rounded-2xl sm:rounded-[32px] shadow-[0_4px_24px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] border border-[#EBE8E0] overflow-hidden flex flex-col z-10 shrink-0 transition-all duration-300">
+      {/* Main Container - 全宽无边框 */}
+      <div className="relative w-full bg-[#FDFBF7] min-h-screen flex flex-col z-10">
         
         {/* Header Section: Date, Solar Term & Calendar */}
-        <div className="pt-5 px-4 sm:pt-8 sm:px-8 md:pt-10 md:px-12 pb-5 sm:pb-6 z-10 shrink-0 border-b border-[#EBE8E0]/50">
-            {/* Top Row: Date + Calendar */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-start gap-4 sm:gap-6 mb-6">
+        <div className="pt-5 px-4 sm:pt-8 sm:px-8 md:pt-10 md:px-12 lg:px-16 pb-5 sm:pb-6 z-10 shrink-0 border-b border-[#EBE8E0]/50">
+            {/* Top Row: Date + Solar Term + Calendar */}
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-start gap-4 sm:gap-6">
                 {/* Left: Date Display */}
                 <div className="flex-shrink-0">
                     <div className="text-3xl sm:text-4xl md:text-5xl text-[#2D2926] tracking-tight mb-1 sm:mb-2 font-bold">
@@ -61,43 +61,76 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({ data, currentDate, imageU
                     </div>
                 </div>
 
-                {/* Right: Calendar Widget - 固定宽度防止压缩 */}
+                {/* Middle: Solar Term Image - 填补日期和日历之间的空白 */}
+                {solarTerm && (
+                  <div className="flex-1 hidden lg:flex items-center justify-center px-8">
+                      <div className="relative w-full max-w-md h-32 rounded-2xl overflow-hidden bg-[#F7F5EF] border border-[#EBE8E0] group">
+                          {/* 背景图片 */}
+                          {loadingImage && !solarTermImageUrl ? (
+                              <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+                                  <div className="w-5 h-5 border-2 border-dashed border-[#D97757] rounded-full animate-spin"></div>
+                              </div>
+                          ) : solarTermImageUrl ? (
+                              <img 
+                                  src={solarTermImageUrl} 
+                                  alt={solarTerm.name} 
+                                  className="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-80 transition-transform duration-700 group-hover:scale-105"
+                              />
+                          ) : (
+                              <div className="absolute inset-0 bg-gradient-to-r from-[#F7F5EF] to-[#EBE8E0]" />
+                          )}
+                          
+                          {/* 纹理叠加 */}
+                          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')] opacity-30 mix-blend-multiply pointer-events-none"></div>
+                          
+                          {/* 渐变遮罩 */}
+                          <div className="absolute inset-0 bg-gradient-to-r from-[#FDFBF7]/95 via-[#FDFBF7]/50 to-transparent"></div>
+                          
+                          {/* 节气文字 */}
+                          <div className="absolute inset-0 flex items-center px-6">
+                              <div className="flex flex-col">
+                                  <span className="text-3xl font-bold text-[#2D2926] leading-none mb-1.5" style={{ fontFamily: '"LXGW WenKai Screen", serif' }}>
+                                      {solarTerm.name}
+                                  </span>
+                                  <span className="text-[11px] uppercase tracking-widest text-[#8F8B85] font-semibold">
+                                      {solarTerm.en}
+                                  </span>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                )}
+
+                {/* Right: Calendar Widget */}
                 <div className="flex-shrink-0 w-full lg:w-auto">
                     <CalendarWidget currentDate={currentDate} primaryColor={data.themeColor} />
                 </div>
             </div>
 
-            {/* Bottom Row: Solar Term Banner - 大图填充 */}
+            {/* Mobile: Solar Term Banner */}
             {solarTerm && (
-              <div className="relative w-full h-32 sm:h-40 md:h-48 rounded-xl sm:rounded-2xl overflow-hidden bg-[#F7F5EF] border border-[#EBE8E0] group">
-                  {/* 背景图片 */}
+              <div className="lg:hidden mt-6 relative w-full h-28 sm:h-32 rounded-xl overflow-hidden bg-[#F7F5EF] border border-[#EBE8E0] group">
                   {loadingImage && !solarTermImageUrl ? (
                       <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
-                          <div className="w-6 h-6 border-2 border-dashed border-[#D97757] rounded-full animate-spin"></div>
+                          <div className="w-5 h-5 border-2 border-dashed border-[#D97757] rounded-full animate-spin"></div>
                       </div>
                   ) : solarTermImageUrl ? (
                       <img 
                           src={solarTermImageUrl} 
                           alt={solarTerm.name} 
-                          className="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-80 transition-transform duration-700 group-hover:scale-105"
+                          className="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-80"
                       />
                   ) : (
                       <div className="absolute inset-0 bg-gradient-to-r from-[#F7F5EF] to-[#EBE8E0]" />
                   )}
-                  
-                  {/* 纹理叠加 */}
                   <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')] opacity-30 mix-blend-multiply pointer-events-none"></div>
-                  
-                  {/* 渐变遮罩 */}
                   <div className="absolute inset-0 bg-gradient-to-r from-[#FDFBF7]/95 via-[#FDFBF7]/60 to-transparent"></div>
-                  
-                  {/* 节气文字 */}
-                  <div className="absolute inset-0 flex items-center px-6 sm:px-8 md:px-10">
+                  <div className="absolute inset-0 flex items-center px-5">
                       <div className="flex flex-col">
-                          <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#2D2926] leading-none mb-2" style={{ fontFamily: '"LXGW WenKai Screen", serif' }}>
+                          <span className="text-2xl sm:text-3xl font-bold text-[#2D2926] leading-none mb-1" style={{ fontFamily: '"LXGW WenKai Screen", serif' }}>
                               {solarTerm.name}
                           </span>
-                          <span className="text-xs sm:text-sm uppercase tracking-widest text-[#8F8B85] font-semibold">
+                          <span className="text-[10px] sm:text-[11px] uppercase tracking-widest text-[#8F8B85] font-semibold">
                               {solarTerm.en}
                           </span>
                       </div>
@@ -107,7 +140,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({ data, currentDate, imageU
         </div>
 
         {/* Content Body - Responsive Grid */}
-        <div className="flex-1 px-4 sm:px-8 md:px-12 py-6 sm:py-8 md:py-12 grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 md:gap-16 relative z-10">
+        <div className="flex-1 px-4 sm:px-8 md:px-12 lg:px-16 py-6 sm:py-8 md:py-12 grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 md:gap-16 relative z-10">
             
             {/* Left Column: Visuals */}
             <div className="flex flex-col h-full w-full">

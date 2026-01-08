@@ -5,6 +5,61 @@ const API_KEY = process.env.API_KEY || '';
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
+// 缓存 key 常量
+const CACHE_KEYS = {
+  EVENT: 'history_event_cache',
+  MAIN_IMAGE: 'history_main_image_cache',
+  SOLAR_IMAGE: 'history_solar_image_cache',
+};
+
+// 获取今天凌晨 12 点的时间戳（作为过期时间）
+const getMidnightExpiry = (): number => {
+  const now = new Date();
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+  return midnight.getTime();
+};
+
+// 获取今天的日期 key（用于判断缓存是否是今天的）
+const getTodayKey = (): string => {
+  const now = new Date();
+  return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+};
+
+// 通用缓存读取
+const getCache = <T>(key: string): T | null => {
+  try {
+    const cached = localStorage.getItem(key);
+    if (!cached) return null;
+    
+    const { data, dateKey, expiry } = JSON.parse(cached);
+    const now = Date.now();
+    
+    // 检查是否过期或不是今天的数据
+    if (now > expiry || dateKey !== getTodayKey()) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    
+    return data as T;
+  } catch {
+    return null;
+  }
+};
+
+// 通用缓存写入
+const setCache = <T>(key: string, data: T): void => {
+  try {
+    const cacheData = {
+      data,
+      dateKey: getTodayKey(),
+      expiry: getMidnightExpiry(),
+    };
+    localStorage.setItem(key, JSON.stringify(cacheData));
+  } catch (e) {
+    console.warn('Cache write failed:', e);
+  }
+};
+
 // Default fallback data in case API fails or key is missing
 const FALLBACK_EVENT: HistoryEvent = {
   year: "2007",
@@ -20,6 +75,13 @@ const FALLBACK_EVENT: HistoryEvent = {
 };
 
 export const fetchHistoryEvent = async (date: Date): Promise<HistoryEvent> => {
+  // 先检查缓存
+  const cached = getCache<HistoryEvent>(CACHE_KEYS.EVENT);
+  if (cached) {
+    console.log('Using cached history event');
+    return cached;
+  }
+
   if (!API_KEY) {
     console.warn("No API Key provided, using fallback data.");
     return FALLBACK_EVENT;
@@ -71,7 +133,9 @@ export const fetchHistoryEvent = async (date: Date): Promise<HistoryEvent> => {
     });
 
     if (response.text) {
-      return JSON.parse(response.text) as HistoryEvent;
+      const result = JSON.parse(response.text) as HistoryEvent;
+      setCache(CACHE_KEYS.EVENT, result);
+      return result;
     }
     throw new Error("Empty response from Gemini");
 
@@ -88,6 +152,13 @@ export const fetchHistoryEvent = async (date: Date): Promise<HistoryEvent> => {
 };
 
 export const generateIllustration = async (prompt: string): Promise<string | null> => {
+  // 先检查缓存
+  const cached = getCache<string>(CACHE_KEYS.MAIN_IMAGE);
+  if (cached) {
+    console.log('Using cached main illustration');
+    return cached;
+  }
+
   if (!API_KEY) return null;
 
   try {
@@ -104,7 +175,9 @@ export const generateIllustration = async (prompt: string): Promise<string | nul
     if (response.candidates && response.candidates[0].content.parts) {
       for (const part of response.candidates[0].content.parts) {
         if (part.inlineData && part.inlineData.data) {
-           return `data:image/png;base64,${part.inlineData.data}`;
+           const imageUrl = `data:image/png;base64,${part.inlineData.data}`;
+           setCache(CACHE_KEYS.MAIN_IMAGE, imageUrl);
+           return imageUrl;
         }
       }
     }
@@ -118,6 +191,13 @@ export const generateIllustration = async (prompt: string): Promise<string | nul
 };
 
 export const generateSolarTermIllustration = async (termName: string, termEn: string): Promise<string | null> => {
+  // 先检查缓存
+  const cached = getCache<string>(CACHE_KEYS.SOLAR_IMAGE);
+  if (cached) {
+    console.log('Using cached solar term illustration');
+    return cached;
+  }
+
   if (!API_KEY) return null;
 
   try {
@@ -136,7 +216,9 @@ export const generateSolarTermIllustration = async (termName: string, termEn: st
     if (response.candidates && response.candidates[0].content.parts) {
       for (const part of response.candidates[0].content.parts) {
         if (part.inlineData && part.inlineData.data) {
-           return `data:image/png;base64,${part.inlineData.data}`;
+           const imageUrl = `data:image/png;base64,${part.inlineData.data}`;
+           setCache(CACHE_KEYS.SOLAR_IMAGE, imageUrl);
+           return imageUrl;
         }
       }
     }

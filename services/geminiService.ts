@@ -7,7 +7,7 @@ const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 // 缓存 key 常量
 const CACHE_KEYS = {
-  EVENT: 'history_event_cache',
+  EVENTS: 'history_events_cache',
   MAIN_IMAGE: 'history_main_image_cache',
   SOLAR_IMAGE: 'history_solar_image_cache',
 };
@@ -74,27 +74,27 @@ const FALLBACK_EVENT: HistoryEvent = {
   secondaryColor: "#5AC8FA"
 };
 
-export const fetchHistoryEvent = async (date: Date): Promise<HistoryEvent> => {
+export const fetchHistoryEvents = async (date: Date): Promise<HistoryEvent[]> => {
   // 先检查缓存
-  const cached = getCache<HistoryEvent>(CACHE_KEYS.EVENT);
+  const cached = getCache<HistoryEvent[]>(CACHE_KEYS.EVENTS);
   if (cached) {
-    console.log('Using cached history event');
+    console.log('Using cached history events');
     return cached;
   }
 
   if (!API_KEY) {
     console.warn("No API Key provided, using fallback data.");
-    return FALLBACK_EVENT;
+    return [FALLBACK_EVENT];
   }
 
   const month = date.getMonth() + 1;
   const day = date.getDate();
 
   const prompt = `
-    Find a historically significant event that happened on ${month}月${day}日 (Month: ${month}, Day: ${day}) in history.
-    STRICT REQUIREMENT: The event MUST be related to **Computer Science, Programming, Software Engineering, Artificial Intelligence, or Internet History**.
+    Find 3-5 historically significant events that happened on ${month}月${day}日 (Month: ${month}, Day: ${day}) in history.
+    STRICT REQUIREMENT: The events MUST be related to **Computer Science, Programming, Software Engineering, Artificial Intelligence, or Internet History**.
     
-    Return a JSON object with the following fields:
+    Return a JSON array of objects, each with the following fields:
     - year: The year of the event (string)
     - month: The month of the event (string, number)
     - day: The day of the event (string, number)
@@ -109,46 +109,55 @@ export const fetchHistoryEvent = async (date: Date): Promise<HistoryEvent> => {
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-preview-09-2025', // Using the latest specified model for best reasoning
+      model: 'gemini-2.5-flash-preview-09-2025',
       contents: prompt,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            year: { type: Type.STRING },
-            month: { type: Type.STRING },
-            day: { type: Type.STRING },
-            title: { type: Type.STRING },
-            description: { type: Type.STRING },
-            category: { type: Type.STRING },
-            keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-            visualPrompt: { type: Type.STRING },
-            themeColor: { type: Type.STRING },
-            secondaryColor: { type: Type.STRING },
-          },
-          required: ["year", "month", "day", "title", "description", "category", "keywords", "visualPrompt", "themeColor", "secondaryColor"]
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              year: { type: Type.STRING },
+              month: { type: Type.STRING },
+              day: { type: Type.STRING },
+              title: { type: Type.STRING },
+              description: { type: Type.STRING },
+              category: { type: Type.STRING },
+              keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+              visualPrompt: { type: Type.STRING },
+              themeColor: { type: Type.STRING },
+              secondaryColor: { type: Type.STRING },
+            },
+            required: ["year", "month", "day", "title", "description", "category", "keywords", "visualPrompt", "themeColor", "secondaryColor"]
+          }
         }
       }
     });
 
     if (response.text) {
-      const result = JSON.parse(response.text) as HistoryEvent;
-      setCache(CACHE_KEYS.EVENT, result);
+      const result = JSON.parse(response.text) as HistoryEvent[];
+      setCache(CACHE_KEYS.EVENTS, result);
       return result;
     }
     throw new Error("Empty response from Gemini");
 
   } catch (error) {
-    console.error("Failed to fetch history event:", error);
-    return {
+    console.error("Failed to fetch history events:", error);
+    return [{
         ...FALLBACK_EVENT,
         month: month.toString(),
         day: day.toString(),
         title: `历史上的${month}月${day}日`,
         description: "抱歉，无法获取今日的历史事件详情。请检查网络连接或 API 配置。",
-    };
+    }];
   }
+};
+
+// 保留旧函数兼容性
+export const fetchHistoryEvent = async (date: Date): Promise<HistoryEvent> => {
+  const events = await fetchHistoryEvents(date);
+  return events[0];
 };
 
 export const generateIllustration = async (prompt: string): Promise<string | null> => {

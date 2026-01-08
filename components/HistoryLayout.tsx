@@ -70,7 +70,7 @@ const HistoryLayout: React.FC<HistoryLayoutProps> = ({ data, currentDate, imageU
                   <span className="text-sm text-[#8F8B85] mt-3">绘制中...</span>
                 </div>
               ) : imageUrl ? (
-                <img src={imageUrl} alt={data.visualPrompt} className="absolute inset-0 w-full h-full object-contain p-6" />
+                <img src={imageUrl} alt={data.visualPrompt} className="absolute inset-0 w-full h-full object-cover" />
               ) : (
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-[#8F8B85]">
                   <ImageIcon size={48} strokeWidth={1} className="mb-2 opacity-40" />
